@@ -35,15 +35,13 @@ app.get('/todos/:id',(req,res) => {
     if(!ObjectID.isValid(id)){
         return res.status(404).send();
     }
-
-    User.findById(id).then((user) => {
-        if (!user) {
+    Todo.findById(id).then((todo) => {
+        if (!todo) {
             res.status(404).send();
         }
-        res.send(user);
-    }).catch((e) => res.status(404).send());
-    
-})
+        res.send({todo});
+    }).catch((e) => res.status(404).send());    
+});
 
 app.listen(3000, () => {
     console.log('listening on port 3000');
