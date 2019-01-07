@@ -9,8 +9,8 @@ let UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        minlength: 1,
         unique: true,
+        minlength: 1,
         validate: {
             validator: validator.isEmail,
             message: '{VALUE} is not a valid email'
@@ -20,7 +20,8 @@ let UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 6
-    },
+    }
+    ,
     tokens: [{
         access: {
             type: String,
@@ -36,9 +37,8 @@ let UserSchema = new mongoose.Schema({
 UserSchema.methods.toJSON = function () {
     let user = this;
     let userObject = user.toObject();
-
     return _.pick(userObject, ['_id', 'email']);
-};
+}
 
 UserSchema.methods.generateAuthToken = function () {
     let user = this;
@@ -50,7 +50,7 @@ UserSchema.methods.generateAuthToken = function () {
     return user.save().then(() => {
         return token;
     });
-};
+}
 
 UserSchema.statics.findByToken = function (token) {
     let User = this;
@@ -69,6 +69,26 @@ UserSchema.statics.findByToken = function (token) {
     });
 }
 
+UserSchema.statics.findByCredentials = function (email, password) {
+    let User = this;
+
+    return User.findOne({ email }).then((user) => {
+        if (!user) {
+            return Promise.reject();
+        }
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, user.password, (err, res) => {
+                if (res) {
+                    resolve(user);
+                } else {
+                    reject();
+                }
+            });
+        });
+    });
+}
+
+
 UserSchema.pre('save', function (next) {
     let user = this;
 
@@ -79,11 +99,11 @@ UserSchema.pre('save', function (next) {
                 next();
             });
         });
-    }else {
+    } else {
         next();
     }
-})
+});
 
-let User = mongoose.model('user', UserSchema);
+let User = mongoose.model('User', UserSchema);
 
 module.exports = { User };
